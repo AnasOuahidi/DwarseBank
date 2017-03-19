@@ -15,16 +15,17 @@ class DefaultController extends Controller {
      */
     public function indexAction(Request $request) {
         $transactions = $request->request->all()['entry'];
+        $token = $request->headers->get('Token');
         $transactionsArray = [];
         $idsCommercantsArray = [];
         foreach ($transactions as $item) {
-            $idCommercant = intval($this->decrypter($item['idCommercant']));
+            $idCommercant = intval($this->decrypter($token, $item['idCommercant']));
             $transaction = new Transaction();
-            $transaction->setId(intval($this->decrypter($item['id'])));
-            $transaction->setDate($this->decrypter($item['date']));
-            $transaction->setMontant(floatval($this->decrypter($item['montant'])));
-            $transaction->setNomCommercant($this->decrypter($item['nomCommercant']));
-            $transaction->setIbanCommercant($this->decrypter($item['ibanCommercant']));
+            $transaction->setId(intval($this->decrypter($token, $item['id'])));
+            $transaction->setDate($this->decrypter($token, $item['date']));
+            $transaction->setMontant(floatval($this->decrypter($token, $item['montant'])));
+            $transaction->setNomCommercant($this->decrypter($token, $item['nomCommercant']));
+            $transaction->setIbanCommercant($this->decrypter($token, $item['ibanCommercant']));
             $transaction->setIdCommercant($idCommercant);
             $transactionsArray[] = $transaction;
             if (!in_array($idCommercant, $idsCommercantsArray)) {
@@ -45,8 +46,8 @@ class DefaultController extends Controller {
         return $returnedTransactions;
     }
 
-    private function decrypter($data) {
-        $maCleDeCryptage = md5("bcb04b7e103a0cd8b54763051cef08bc55abe029fdebae5e1d417e2ffb2a00a3");
+    private function decrypter($token, $data) {
+        $maCleDeCryptage = md5($token);
         $letter = -1;
         $newstr = "";
         $maChaineCrypter = base64_decode($data);
